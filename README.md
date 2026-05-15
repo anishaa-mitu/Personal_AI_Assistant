@@ -1,2 +1,3 @@
-# Personal_AI_Assistant
+# Personal AI Assistant
 n8n workflow automation
+AI Automation
