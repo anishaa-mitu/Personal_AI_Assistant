@@ -1,0 +1,1114 @@
+{
+  "name": "Personal AI Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "1ed592b7-d8fc-419f-b3ba-2e5a44034e47",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        96
+      ],
+      "webhookId": "35130b1d-8eb5-4127-882f-42edd9f3cf7a",
+      "credentials": {
+        "telegramApi": {
+          "id": "GJZjanxhCZIq1B3i",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are a comprehensive personal AI assistant. You have access to the following tools and MUST call them — never just describe what you can do.\n\nToday's date: {{ $now.format(\"yyyy-MM-dd\") }}\n\n---\n\nGMAIL RULES (follow strictly):\n- \"check emails\" / \"read emails\" / \"summarise emails\" → call Get tool immediately, then summarise in short plain text.\n- \"send email to X\" → call Send tool with that address\n- \"delete email\" → call Delete tool\n- \"label email\" → call Add Label tool\n- \"draft email\" / \"important email\" → call Create Draft tool\n- \"reply to email\" → call Reply tool\n- Always start emails with \"Assalamualikum,\" and sign off \"Thank you and best regards, Anisha\"\n- For unimportant or easy replies → use Send tool directly\n- For important emails → use Draft tool so Anisha can review first\n- Never describe what you will do. Just do it immediately.\n\n---\n\nCALENDAR RULES:\n- \"schedule\" / \"add event\" / \"book\" → call Calendar Create Event tool\n- \"what's on my calendar\" / \"upcoming events\" → call Calendar Get Events tool\n- If no end time given → set end time as start time + 1 hour\n- If no attendees given → create event with no attendees\n\n---\n\nGOOGLE DRIVE RULES:\n- \"find file\" / \"search drive\" → call Drive Search Files tool\n- \"upload file\" → call Drive Upload File tool\n- \"move file\" → call Drive Move File tool and cretae folders and organise files \n\n---\n\nPOMODORO / FOCUS TIMER RULES:\n- If user says \"focus [subject]\" or \"start focus\" → acknowledge with: \"Starting a 25-minute focus session for [subject]! I'll notify you when it's done.\"\n- The subject after the word \"focus\" is the course or topic being studied\n- Do not call any tool for this — the timer is handled automatically by the workflow\n\n---\n\nOTHER TOOLS:\n- Web Search → use for any current info, news, research, or calorie/nutrition lookup\n- Calculator → use for any math, calorie totals, or numerical calculations\n- For calorie tracking: search for nutritional info first, then use calculator for totals\n\n---\n\nGENERAL RULES:\n- Always actually call the tools. Never just say you will.\n- Keep replies short and report what you actually did.\n- Be helpful, accurate, and proactive.",
+          "maxIterations": 50
+        }
+      },
+      "id": "02e2bdfc-f1ff-4c4b-a9fe-5e83cdf980ac",
+      "name": "Personal AI Assistant",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1584,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ka3kshi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ka3kshi@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('title', 'Event title') }}"
+        }
+      },
+      "id": "daf0cb8e-dc01-41ee-bbe6-ee5e672cb0ca",
+      "name": "Calendar Create Event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        528
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sqUeLCqLWKi77Zqy",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "ka3kshi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ka3kshi@gmail.com"
+        },
+        "limit": 20,
+        "timeMin": "={{ $now.format(\"yyyy-MM-dd\") }}",
+        "timeMax": "={{ $now.plus({ days: 7 }) }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "id": "aafc840a-9c81-4995-a7a6-aef0c5c66d0d",
+      "name": "Calendar Get Events",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        560
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sqUeLCqLWKi77Zqy",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('searchQuery', 'File or folder name to search for') }}",
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('limit', 'Maximum number of results to return', 'number') }}",
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "root",
+            "cachedResultName": "/ (Root folder)"
+          },
+          "whatToSearch": "all"
+        },
+        "options": {}
+      },
+      "id": "90b2083e-db26-4f2c-948f-560751b9c251",
+      "name": "Drive Search Files",
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        272,
+        800
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iO10EicKPyQkPDpP",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Input_Data_Field_Name', ``, 'string') }}",
+        "name": "=new",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "54c63856-cc93-40ae-81c9-a54825c35ea1",
+      "name": "Drive Upload File",
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        480,
+        800
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iO10EicKPyQkPDpP",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "gl": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Country', ``, 'string') }}",
+          "device": "desktop",
+          "hl": "en"
+        }
+      },
+      "id": "dfdc35aa-f08b-4cbe-89a9-068471abc281",
+      "name": "Web Search Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        416
+      ],
+      "credentials": {
+        "serpApi": {
+          "id": "TYB4bcmJpMKeDMc6",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "7ee5268c-5112-4109-8031-72c97e081be6",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        816
+      ],
+      "id": "b9076467-6495-4923-b63f-0f4912275919",
+      "name": "Create a draft ",
+      "webhookId": "589206d9-186f-4f6a-b2a9-1e67153ac760",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "ka3kshi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ka3kshi@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        736
+      ],
+      "id": "17904cc1-891a-42e9-a9e8-36ccc0d6ff2c",
+      "name": "Delete an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sqUeLCqLWKi77Zqy",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('File', ``, 'string') }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        640,
+        800
+      ],
+      "id": "30ed4b43-4484-41d1-b3cb-b2b3c350c1cb",
+      "name": "Move file in Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iO10EicKPyQkPDpP",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": [
+          "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+        ]
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1616,
+        816
+      ],
+      "id": "206f7746-d463-4f69-9051-73cb1eb1705b",
+      "name": "Remove label ",
+      "webhookId": "1fb9a627-6a59-4753-a5da-96e613538ac0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsUnread",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        816
+      ],
+      "id": "f07b7552-cb1c-48ed-a51c-3426f50d09b6",
+      "name": "Mark as unread ",
+      "webhookId": "68583cb1-5b44-4f0a-943d-8362096f0fb3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1952,
+        816
+      ],
+      "id": "f5a95f1d-7ce7-4e67-8a4d-73db2716cf52",
+      "name": "Reply ",
+      "webhookId": "74bbdc3e-7622-41ca-85d0-d5fd8ff46440",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        816
+      ],
+      "id": "9b56453c-d4c8-4102-95e5-cb6505f30c64",
+      "name": "Mark as read ",
+      "webhookId": "ce226112-e780-4a2c-afb1-901981fe46a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2096,
+        816
+      ],
+      "id": "62dac49f-6777-40a2-961f-93ab8644433e",
+      "name": "Delete ",
+      "webhookId": "78be9569-19ad-4162-8737-688d24769f49",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "operation": "create",
+        "name": "Assistant/Invoices",
+        "options": {
+          "labelListVisibility": "labelShow"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        816
+      ],
+      "id": "4300486a-30f1-4cd2-92fa-1ea2e290626e",
+      "name": "Create a label ",
+      "webhookId": "b5938b8d-679e-4655-8211-7a9b3071e1e1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": [
+          "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+        ]
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2544,
+        816
+      ],
+      "id": "71a23481-ceed-456f-b449-3df1350b8242",
+      "name": "Add label",
+      "webhookId": "e8dcf0b2-eb1b-4b75-bbbf-3952c50851b9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 100,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2688,
+        816
+      ],
+      "id": "fd847218-4e37-45f9-9aac-83894a382142",
+      "name": "Get ",
+      "webhookId": "f8ae805b-1a6a-46e0-9386-8daa07b3e606",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', `Email address of the recipient`, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `Email subject line`, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Start every email with 'Assalamualikum,'.\nSign off emails saying thank you and best regards as 'Anisha'.`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        2816,
+        816
+      ],
+      "id": "ec89b182-f3ef-4a47-b1dc-c860e015700b",
+      "name": "Send ",
+      "webhookId": "462e3d83-b484-43ff-9ac6-057a679ff1f2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ifStZoAf481G9WZt",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 📧 Gmail Tools\nEmail management: send, reply, draft, delete, labels, read/unread",
+        "height": 384,
+        "width": 1696,
+        "color": 3
+      },
+      "id": "592d7821-0f37-4aae-871a-88db9e131bf8",
+      "name": "Sticky Note 98da2378",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📅 Calendar Tools\nEvent management: create, view, delete events",
+        "height": 496,
+        "width": 384,
+        "color": 4
+      },
+      "id": "bc3ea6a7-6230-4868-82ba-612ed98bee2d",
+      "name": "Sticky Note d199c4cf",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📁 Google Drive Tools\nFile management: search, upload, move files",
+        "height": 368,
+        "width": 736,
+        "color": 5
+      },
+      "id": "688cca41-09f6-435b-b422-762b30226139",
+      "name": "Sticky Note 214c16d4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 25,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        -48
+      ],
+      "id": "a8ce54fd-e20a-4607-89ce-1b248bbbd639",
+      "name": "Pomodoro Timer Engine",
+      "webhookId": "76d02c35-26ea-44ca-8214-79cb454a7758"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Dg3hS4CX6Xz7LRLbHF_92sdY7Jb6kfFSnhsuR8uhUKk",
+          "mode": "list",
+          "cachedResultName": "CSE 299 Project",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Dg3hS4CX6Xz7LRLbHF_92sdY7Jb6kfFSnhsuR8uhUKk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Dg3hS4CX6Xz7LRLbHF_92sdY7Jb6kfFSnhsuR8uhUKk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "Course/Subject": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "Timestamp": "={{ $now.format(\"yyyy-MM-dd HH:mm\") }}",
+            "Duration (Min)": "25",
+            "Status": "Completed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Course/Subject",
+              "displayName": "Course/Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Duration (Min)",
+              "displayName": "Duration (Min)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        -48
+      ],
+      "id": "0dff836a-ff66-46b3-b48c-17bad754775d",
+      "name": "Academic Productivity Analytics",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LsKfUYT8gnbmGbAO",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "ACADEMIC STUDY SYSTEM & DATA ANALYTICS\n",
+        "height": 288,
+        "width": 896
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -128
+      ],
+      "id": "30c6dace-08f7-43c4-8392-8a269b8554a5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=25 min Focus Done! \nLogged at {{ $now.format('HH:mm') }}\nGreat Work!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        -48
+      ],
+      "id": "7074b75f-215d-4012-9949-ab6d55ca03de",
+      "name": "Alert",
+      "webhookId": "ea92f862-2181-4c4c-a7c0-7ae2a22d1981",
+      "credentials": {
+        "telegramApi": {
+          "id": "GJZjanxhCZIq1B3i",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d87bbcd2-ba52-4044-9372-2208404afaa4",
+              "leftValue": "={{ $json.message.text.toLowerCase().includes('focus') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        96
+      ],
+      "id": "e838a10e-9223-46b1-904e-da7c09d661f5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.from.id }}",
+        "contextWindowLength": 70
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        320
+      ],
+      "id": "6a0f6cf1-a179-43e0-bc25-0400e5f8ebb8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3072,
+        240
+      ],
+      "id": "67849f16-71da-40f2-a6aa-7c63f576b868",
+      "name": "Send a text message",
+      "webhookId": "ad51b995-f159-476d-aca8-ee39dfe416d6",
+      "credentials": {
+        "telegramApi": {
+          "id": "GJZjanxhCZIq1B3i",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        272
+      ],
+      "id": "0d2f87ad-81e4-486c-9228-b2302b642932",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Ueh2clQaX1vOUEUl",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('File_to_Update', ``, 'string') }}",
+          "mode": "id"
+        },
+        "changeFileContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Change_File_Content', ``, 'boolean') }}",
+        "newUpdatedFileName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('New_Updated_File_Name', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        816,
+        800
+      ],
+      "id": "c268e847-8ceb-46ca-826d-eea774389c27",
+      "name": "Update file in Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iO10EicKPyQkPDpP",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personal AI Assistant": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Create Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Get Events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive Search Files": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive Upload File": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Search Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move file in Google Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove label ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as unread ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as read ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a label ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pomodoro Timer Engine": {
+      "main": [
+        [
+          {
+            "node": "Academic Productivity Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Academic Productivity Analytics": {
+      "main": [
+        [
+          {
+            "node": "Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Pomodoro Timer Engine",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update file in Google Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "Personal AI Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9969cd56-e035-4ac2-b720-c19929156d79",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2a21428abf59779641ab492ef5b2d2454696dab15b74e63f91cdd962227de9ff"
+  },
+  "id": "VrXlB2ohF3hyUrGN",
+  "tags": []
+}
